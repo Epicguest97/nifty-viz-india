@@ -8,7 +8,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, BarChart2, Clock } from "lucide-react";
 import { ViewMode, SizeMetric } from "@/types/stock";
 
 type OptionType = {
@@ -40,54 +40,50 @@ const HeatmapControls = ({
   const currentSizeMetricLabel = sizeMetrics.find((metric) => metric.id === currentSizeMetric)?.label || '';
 
   return (
-    <div className="flex flex-col md:flex-row space-y-2 md:space-y-0 md:space-x-2 mt-2 md:mt-0">
-      <div className="flex space-x-1 items-center">
-        <span className="text-sm text-muted-foreground">View:</span>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="sm" className="h-8">
-              {currentViewLabel} <ChevronDown className="ml-1 h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent>
-            <DropdownMenuLabel>Time Period</DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            {viewModes.map((mode) => (
-              <DropdownMenuItem
-                key={mode.id}
-                onClick={() => setViewMode(mode.id as ViewMode)}
-                className={currentView === mode.id ? "bg-accent" : ""}
-              >
-                {mode.label}
-              </DropdownMenuItem>
-            ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
+    <div className="flex flex-wrap gap-2">
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="outline" size="sm" className="h-8">
+            <Clock className="mr-1 h-4 w-4" />
+            {currentViewLabel} <ChevronDown className="ml-1 h-3 w-3" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="start">
+          <DropdownMenuLabel>Time Period</DropdownMenuLabel>
+          <DropdownMenuSeparator />
+          {viewModes.map((mode) => (
+            <DropdownMenuItem
+              key={mode.id}
+              onClick={() => setViewMode(mode.id as ViewMode)}
+              className={currentView === mode.id ? "bg-accent" : ""}
+            >
+              {mode.label}
+            </DropdownMenuItem>
+          ))}
+        </DropdownMenuContent>
+      </DropdownMenu>
 
-      <div className="flex space-x-1 items-center">
-        <span className="text-sm text-muted-foreground">Size by:</span>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="sm" className="h-8">
-              {currentSizeMetricLabel} <ChevronDown className="ml-1 h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent>
-            <DropdownMenuLabel>Size Metric</DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            {sizeMetrics.map((metric) => (
-              <DropdownMenuItem
-                key={metric.id}
-                onClick={() => setSizeMetric(metric.id as SizeMetric)}
-                className={currentSizeMetric === metric.id ? "bg-accent" : ""}
-              >
-                {metric.label}
-              </DropdownMenuItem>
-            ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="outline" size="sm" className="h-8">
+            <BarChart2 className="mr-1 h-4 w-4" />
+            {currentSizeMetricLabel} <ChevronDown className="ml-1 h-3 w-3" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="start">
+          <DropdownMenuLabel>Size By</DropdownMenuLabel>
+          <DropdownMenuSeparator />
+          {sizeMetrics.map((metric) => (
+            <DropdownMenuItem
+              key={metric.id}
+              onClick={() => setSizeMetric(metric.id as SizeMetric)}
+              className={currentSizeMetric === metric.id ? "bg-accent" : ""}
+            >
+              {metric.label}
+            </DropdownMenuItem>
+          ))}
+        </DropdownMenuContent>
+      </DropdownMenu>
     </div>
   );
 };

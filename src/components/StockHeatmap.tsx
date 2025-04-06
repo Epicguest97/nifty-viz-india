@@ -1,6 +1,7 @@
 
 import { useMemo } from "react";
 import { StockData, SizeMetric } from "@/types/stock";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface StockHeatmapProps {
   stocks: StockData[];
@@ -46,16 +47,16 @@ const StockHeatmap = ({ stocks, sizeMetric }: StockHeatmapProps) => {
     // Use the appropriate metric based on user selection
     const value = sizeMetric === 'marketCap' ? stock.marketCap : (stock.volume || 0);
     
-    // Simple size calculation
-    if (value > 2000) return 'w-52 h-44';
-    if (value > 1000) return 'w-44 h-36';
-    return 'w-36 h-28';
+    // More granular size calculation for Finviz-style boxes
+    if (value > 2000) return 'w-[120px] h-[90px]';
+    if (value > 1000) return 'w-[110px] h-[80px]';
+    return 'w-[100px] h-[70px]';
   };
 
   return (
-    <div className="space-y-6">
-      {/* Legend */}
-      <div className="flex flex-wrap justify-center items-center gap-2 text-xs">
+    <div className="space-y-4">
+      {/* Color Legend */}
+      <div className="flex flex-wrap justify-center items-center gap-2 text-xs border-b pb-2">
         <div className="flex items-center">
           <div className="w-3 h-3 bg-red-700 mr-1"></div>
           <span>&lt;-3%</span>
@@ -86,28 +87,38 @@ const StockHeatmap = ({ stocks, sizeMetric }: StockHeatmapProps) => {
         </div>
       </div>
 
-      {/* Heatmap */}
+      {/* Heatmap - Finviz style */}
       <div className="overflow-auto">
         {Object.entries(stocksBySector).map(([sector, sectorStocks]) => (
-          <div key={sector} className="mb-8">
-            <h3 className="text-lg font-semibold mb-2">{sector}</h3>
-            <div className="flex flex-wrap gap-2">
+          <div key={sector} className="mb-4">
+            <h3 className="text-md font-bold bg-secondary px-2 py-1 mb-2">{sector}</h3>
+            <div className="flex flex-wrap gap-1">
               {sectorStocks.map((stock) => (
-                <div
-                  key={stock.symbol}
-                  className={`${getBoxSize(stock)} ${getBackgroundColor(stock.change)} ${getTextColor(stock.change)} p-3 rounded flex flex-col justify-between cursor-pointer transition-transform hover:scale-105`}
-                >
-                  <div>
-                    <div className="font-semibold truncate">{stock.name}</div>
-                    <div className="text-sm opacity-90">{stock.symbol}</div>
-                  </div>
-                  <div className="flex justify-between items-end">
-                    <div className="text-xl font-bold">₹{stock.price}</div>
-                    <div className={`${stock.change >= 0 ? 'text-green-100' : 'text-red-100'} font-semibold`}>
-                      {stock.change >= 0 ? '+' : ''}{stock.change}%
-                    </div>
-                  </div>
-                </div>
+                <TooltipProvider key={stock.symbol}>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div
+                        className={`${getBoxSize(stock)} ${getBackgroundColor(stock.change)} ${getTextColor(stock.change)} p-1.5 flex flex-col justify-between cursor-pointer border border-gray-300`}
+                      >
+                        <div className="flex justify-between items-start">
+                          <div className="font-bold text-xs truncate">{stock.symbol}</div>
+                          <div className="text-xs">{stock.change >= 0 ? '+' : ''}{stock.change}%</div>
+                        </div>
+                        <div className="text-[10px] truncate">{stock.name}</div>
+                        <div className="font-semibold">₹{stock.price}</div>
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <div className="space-y-1">
+                        <div className="font-bold">{stock.name} ({stock.symbol})</div>
+                        <div>Price: ₹{stock.price}</div>
+                        <div>Change: {stock.change >= 0 ? '+' : ''}{stock.change}%</div>
+                        <div>Market Cap: ₹{stock.marketCap} B</div>
+                        {stock.volume && <div>Volume: {stock.volume.toLocaleString()}</div>}
+                      </div>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
               ))}
             </div>
           </div>

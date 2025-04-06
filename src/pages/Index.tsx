@@ -1,8 +1,9 @@
 
-import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useState, useCallback } from "react";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import StockHeatmap from "@/components/StockHeatmap";
 import HeatmapControls from "@/components/HeatmapControls";
+import HeatmapFilters from "@/components/HeatmapFilters";
 import { Button } from "@/components/ui/button";
 import { RefreshCw } from "lucide-react";
 import { StockData, ViewMode, SizeMetric } from "@/types/stock";
@@ -41,9 +42,27 @@ const sizeMetrics = [
 
 const Index = () => {
   const [stocks, setStocks] = useState<StockData[]>(mockStocks);
+  const [filteredStocks, setFilteredStocks] = useState<StockData[]>(mockStocks);
   const [viewMode, setViewMode] = useState<ViewMode>("daily");
   const [sizeMetric, setSizeMetric] = useState<SizeMetric>("marketCap");
   const [isLoading, setIsLoading] = useState(false);
+  
+  // Handle search functionality
+  const handleSearch = useCallback((query: string) => {
+    if (!query) {
+      setFilteredStocks(stocks);
+      return;
+    }
+    
+    const lowercaseQuery = query.toLowerCase();
+    const filtered = stocks.filter(
+      stock => 
+        stock.name.toLowerCase().includes(lowercaseQuery) || 
+        stock.symbol.toLowerCase().includes(lowercaseQuery)
+    );
+    
+    setFilteredStocks(filtered);
+  }, [stocks]);
   
   // This function will be replaced with API call
   const refreshData = () => {
@@ -56,6 +75,7 @@ const Index = () => {
         change: parseFloat((stock.change + (Math.random() * 2 - 1)).toFixed(2))
       }));
       setStocks(updatedStocks);
+      setFilteredStocks(updatedStocks);
       setIsLoading(false);
       toast({
         title: "Data Refreshed",
@@ -65,12 +85,12 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background p-4 md:p-6">
-      <div className="container mx-auto space-y-6">
-        <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+    <div className="min-h-screen bg-background p-2 md:p-4">
+      <div className="container mx-auto space-y-4">
+        <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-2">
           <div>
-            <h1 className="text-3xl font-bold">Nifty 50 Heatmap</h1>
-            <p className="text-muted-foreground">
+            <h1 className="text-2xl font-bold">Nifty 50 Heatmap</h1>
+            <p className="text-sm text-muted-foreground">
               Visualize the performance of India's 50 largest publicly traded companies
             </p>
           </div>
@@ -91,10 +111,9 @@ const Index = () => {
           </Button>
         </header>
 
-        <Card>
-          <CardHeader className="pb-0">
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center">
-              <CardTitle>Stock Performance</CardTitle>
+        <Card className="border-0 shadow-sm">
+          <CardHeader className="pb-0 pt-2 px-3">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center space-y-2 md:space-y-0">
               <HeatmapControls 
                 viewModes={viewModes} 
                 currentView={viewMode}
@@ -103,15 +122,19 @@ const Index = () => {
                 currentSizeMetric={sizeMetric}
                 setSizeMetric={setSizeMetric}
               />
+              <div className="text-sm text-muted-foreground">
+                Last updated: {new Date().toLocaleTimeString()}
+              </div>
             </div>
           </CardHeader>
-          <CardContent>
-            <StockHeatmap stocks={stocks} sizeMetric={sizeMetric} />
+          <CardContent className="pt-3 px-3">
+            <HeatmapFilters onSearch={handleSearch} />
+            <StockHeatmap stocks={filteredStocks} sizeMetric={sizeMetric} />
           </CardContent>
         </Card>
 
-        <div className="text-sm text-muted-foreground text-center">
-          Data source: Yahoo Finance (to be integrated) • Last updated: {new Date().toLocaleTimeString()}
+        <div className="text-xs text-muted-foreground text-center">
+          Data source: Yahoo Finance (to be integrated)
         </div>
       </div>
     </div>
